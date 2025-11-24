@@ -1,0 +1,25 @@
+# Ignore everything by default
+*
+
+# Allow specific files we want
+!dashboard.py
+!requirements.txt
+!.gitignore
+
+# Extra ignores for safety (even though the * covers most)
+.streamlit/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.bak
+*.xlsx
+*.py (except dashboard.py, but the ! above handles it)
+tmp_*
+assets/
+history/
+logs/
+schedules/
+storage/
+telemetry/

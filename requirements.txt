@@ -1,0 +1,13 @@
+dagster==1.8.5
+dagster-webserver==1.8.5
+dagster-postgres==0.22.5
+pandas
+beautifulsoup4
+requests
+dbt-postgres==1.8.0
+streamlit
+pandas
+sqlalchemy
+plotly
+numpy
+psycopg2-binary  # Helps with PostgreSQL connections
