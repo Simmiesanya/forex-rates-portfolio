@@ -10,7 +10,6 @@ import numpy as np
 st.title("FX Rates Dashboard")
 
 # DB connection (same as before)
-# conn_str = os.getenv("POSTGRES_CONN_STR", "postgresql://simmie09:+Sanyasimmie09@172.21.176.1:5432/cbn_warehouse")
 conn_str = st.secrets["POSTGRES_CONN_STR"]
 engine = create_engine(conn_str)
 
