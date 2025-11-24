@@ -1,8 +1,5 @@
-pandas
-beautifulsoup4
-requests
-dbt-postgres==1.8.0
 streamlit
+pandas
 sqlalchemy
 plotly
 numpy
