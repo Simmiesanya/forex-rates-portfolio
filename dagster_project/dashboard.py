@@ -61,14 +61,15 @@ max_date_df['currency'] = '1 ' + max_date_df['currency']
 latest_date_str = max_date_df['date'].iloc[0]
 st.subheader(f"Rates for Latest Available Date: {latest_date_str}")
 max_date_df = max_date_df.drop(columns=['date'])
+max_date_df = max_date_df.rename(columns={'rate': 'Naira Rate'})
 def alternate_rows(row):
     if row.name % 2 == 0:
         bg_color = '#333333' # light gray/black
     else:
         bg_color = '#1a1a1a' # deep grey
     return [f'background-color: {bg_color}; color: #ffffff'] * len(row)
-styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'rate': '{:.2f}'}).set_properties(subset=['rate'], **{'text-align': 'left'})
-st.dataframe(styled_df, use_container_width=False)
+styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'Naira Rate': '{:.2f}'}).set_properties(subset=['Naira Rate'], **{'text-align': 'left'}).hide(axis='index')
+st.dataframe(styled_df, use_container_width=False, width=400, height=400)
 # All the rest of your awesome charts (unchanged)
 if df_trends.empty:
     st.warning("No data available for the selected currencies and time window.")
