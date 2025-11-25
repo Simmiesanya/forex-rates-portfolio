@@ -62,7 +62,7 @@ max_date_df = max_date_df.sort_values(by='currency', key=lambda x: pd.Categorica
 max_date_df = max_date_df.reset_index(drop=True)
 max_date_df['currency'] = '1 ' + max_date_df['currency']
 latest_date_str = max_date_df['date'].iloc[0]
-st.subheader(f"Rates for Latest Available Date: {latest_date_str}")
+st.subheader(f"Latest Rates: {latest_date_str}")
 max_date_df = max_date_df.drop(columns=['date'])
 max_date_df = max_date_df.rename(columns={'rate': 'Naira Rate'})
 def alternate_rows(row):
