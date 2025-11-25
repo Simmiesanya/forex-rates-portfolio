@@ -71,8 +71,8 @@ def alternate_rows(row):
     else:
         bg_color = '#1a1a1a' # deep grey
     return [f'background-color: {bg_color}; color: #ffffff'] * len(row)
-styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'Naira Rate': '{:.2f}'}).set_properties(subset=['Naira Rate'], **{'text-align': 'left'}).hide(axis='index')
-st.dataframe(styled_df, use_container_width=False, width=400, hide_index=True)
+styled_df = max_date_df.style.apply(alternate_rows, axis=1).set_properties(**{'font-size': '16px', 'padding': '10px 15px'}).format({'Naira Rate': '{:.2f}'}).set_properties(subset=['Naira Rate'], **{'text-align': 'left'}).hide(axis='index')
+st.dataframe(styled_df, use_container_width=False, width=600, hide_index=True)
 # All the rest of your awesome charts (unchanged)
 if df_trends.empty:
     st.warning("No data available for the selected currencies and time window.")
