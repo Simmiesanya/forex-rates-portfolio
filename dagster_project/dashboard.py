@@ -60,14 +60,19 @@ df_trends = df[
 st.subheader("Rates for Latest Available Date")
 with engine.connect() as conn:
     max_date_df = pd.read_sql(text("""
-        SELECT date, currency, central_rate 
+        SELECT date, currency, central_rate AS rate
         FROM fx_vault.fx_rates_daily
         WHERE date = (SELECT MAX(date) FROM fx_vault.fx_rates_daily)
     """), conn)
 
 max_date_df['date'] = pd.to_datetime(max_date_df['date']).dt.strftime('%Y-%m-%d')
-max_date_df = max_date_df.dropna(subset=['central_rate'])
-styled_df = max_date_df.style.background_gradient(cmap='viridis', subset=['central_rate']).format(precision=2)
+max_date_df = max_date_df.dropna(subset=['rate'])
+
+def alternate_rows(row):
+    color = '#f0f2f6' if row.name % 2 == 0 else 'white'
+    return [f'background-color: {color}'] * len(row)
+
+styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'rate': '{:.2f}'})
 st.dataframe(styled_df)
 
 # All the rest of your awesome charts (unchanged)
@@ -81,22 +86,6 @@ else:
                         labels={'central_rate': 'Central Rate', 'date': 'Date'})
     fig_trend.update_layout(xaxis_title="Date", yaxis_title="Rate", hovermode="x unified")
     st.plotly_chart(fig_trend, use_container_width=True)
-
-    # 3. Daily % Change Bar Chart
-    st.subheader("Daily Percentage Changes")
-    selected_currency_change = st.selectbox("Select Currency for % Changes", currencies, index=currencies.index('USD') if 'USD' in currencies else 0)
-    time_window_change = st.slider("Time Window for % Changes (Days)", 7, 365, 30)
-    df_changes = df[
-        (df['date'] >= latest_date - pd.Timedelta(days=time_window_change)) &
-        (df['currency'] == selected_currency_change)
-    ].sort_values('date')
-    df_changes['pct_change'] = df_changes['central_rate'].pct_change() * 100
-    df_changes['color'] = np.where(df_changes['pct_change'] > 0, 'Positive (Green)', 'Negative (Red)')
-    fig_change = px.bar(df_changes, x='date', y='pct_change', color='color',
-                        color_discrete_map={'Positive (Green)': 'green', 'Negative (Red)': 'red'},
-                        labels={'pct_change': '% Change', 'date': 'Date'})
-    fig_change.update_layout(showlegend=False, template="plotly_dark")
-    st.plotly_chart(fig_change, use_container_width=True)
 
     # 4. Volatility
     st.subheader("Volatility Analysis (Rolling Std Dev)")
@@ -128,11 +117,21 @@ else:
     fig_ma.update_layout(title="Rates with 10-Day SMA & EMA", template="plotly_dark", hovermode="x unified")
     st.plotly_chart(fig_ma, use_container_width=True)
 
-    # 6. Box Plot
-    st.subheader("Rate Distribution Box Plot")
-    fig_box = px.box(df_trends, x='currency', y='central_rate', color='currency')
-    fig_box.update_layout(template="plotly_dark", showlegend=False)
-    st.plotly_chart(fig_box, use_container_width=True)
+    # 3. Daily % Change Bar Chart
+    st.subheader("Daily Percentage Changes")
+    selected_currency_change = st.selectbox("Select Currency for % Changes", currencies, index=currencies.index('USD') if 'USD' in currencies else 0)
+    time_window_change = st.slider("Time Window for % Changes (Days)", 7, 365, 30)
+    df_changes = df[
+        (df['date'] >= latest_date - pd.Timedelta(days=time_window_change)) &
+        (df['currency'] == selected_currency_change)
+    ].sort_values('date')
+    df_changes['pct_change'] = df_changes['central_rate'].pct_change() * 100
+    df_changes['color'] = np.where(df_changes['pct_change'] > 0, 'Positive (Green)', 'Negative (Red)')
+    fig_change = px.bar(df_changes, x='date', y='pct_change', color='color',
+                        color_discrete_map={'Positive (Green)': 'green', 'Negative (Red)': 'red'},
+                        labels={'pct_change': '% Change', 'date': 'Date'})
+    fig_change.update_layout(showlegend=False, template="plotly_dark")
+    st.plotly_chart(fig_change, use_container_width=True)
 
     # 7. Averages
     st.subheader("Average Rates")
