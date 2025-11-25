@@ -90,7 +90,20 @@ else:
     fig_trend.update_layout(xaxis_title="Date", yaxis_title="Rate", hovermode="x unified")
     st.plotly_chart(fig_trend, use_container_width=True)
 
-    # 3. Moving Averages
+    # 4. Volatility
+    st.subheader("Volatility Analysis (Rolling Std Dev)")
+    window_size = min(30, len(df_trends) // len(selected_currencies))
+    if window_size >= 2:
+        df_vol = df_trends.copy()
+        df_vol['volatility'] = df_vol.groupby('currency')['central_rate'].rolling(window=window_size).std().reset_index(0, drop=True)
+        fig_vol = px.line(df_vol, x='date', y='volatility', color='currency',
+                          title=f"{window_size}-Day Rolling Volatility")
+        fig_vol.update_layout(template="plotly_dark")
+        st.plotly_chart(fig_vol, use_container_width=True)
+    else:
+        st.write("Insufficient data for volatility calculation.")
+
+    # 5. Moving Averages
     st.subheader("Moving Averages (Simple & Exponential)")
     df_ma = df_trends.copy()
     for curr in selected_currencies:
@@ -107,29 +120,23 @@ else:
     fig_ma.update_layout(title="Rates with 10-Day SMA & EMA", template="plotly_dark", hovermode="x unified")
     st.plotly_chart(fig_ma, use_container_width=True)
 
-    # 4. Daily % Change Bar Chart
+    # 3. Daily % Change Bar Chart
     st.subheader("Daily Percentage Changes")
-    df_changes = df_trends.copy()
-    df_changes['pct_change'] = df_changes.groupby('currency')['central_rate'].pct_change() * 100
-    fig_change = px.bar(df_changes, x='date', y='pct_change', color='currency',
-                        labels={'pct_change': '% Change', 'date': 'Date'}, barmode='group')
-    fig_change.update_layout(template="plotly_dark")
+    selected_currency_change = st.selectbox("Select Currency for % Changes", currencies, index=currencies.index('USD') if 'USD' in currencies else 0)
+    time_window_change = st.slider("Time Window for % Changes (Days)", 7, 365, 30)
+    df_changes = df[
+        (df['date'] >= latest_date - pd.Timedelta(days=time_window_change)) &
+        (df['currency'] == selected_currency_change)
+    ].sort_values('date')
+    df_changes['pct_change'] = df_changes['central_rate'].pct_change() * 100
+    df_changes['color'] = np.where(df_changes['pct_change'] > 0, 'Positive (Green)', 'Negative (Red)')
+    fig_change = px.bar(df_changes, x='date', y='pct_change', color='color',
+                        color_discrete_map={'Positive (Green)': 'green', 'Negative (Red)': 'red'},
+                        labels={'pct_change': '% Change', 'date': 'Date'})
+    fig_change.update_layout(showlegend=False, template="plotly_dark")
     st.plotly_chart(fig_change, use_container_width=True)
 
-    # 5. Volatility
-    st.subheader("Volatility Analysis (Rolling Std Dev)")
-    window_size = min(30, len(df_trends) // len(selected_currencies))
-    if window_size >= 2:
-        df_vol = df_trends.copy()
-        df_vol['volatility'] = df_vol.groupby('currency')['central_rate'].rolling(window=window_size).std().reset_index(0, drop=True)
-        fig_vol = px.line(df_vol, x='date', y='volatility', color='currency',
-                          title=f"{window_size}-Day Rolling Volatility")
-        fig_vol.update_layout(template="plotly_dark")
-        st.plotly_chart(fig_vol, use_container_width=True)
-    else:
-        st.write("Insufficient data for volatility calculation.")
-
-    # 6. Averages
+    # 7. Averages
     st.subheader("Average Rates")
     df_30 = df[df['date'] >= latest_date - pd.Timedelta(days=30)].groupby('currency')['central_rate'].mean().reset_index(name='Monthly Avg (30 Days)')
     df_365 = df[df['date'] >= latest_date - pd.Timedelta(days=365)].groupby('currency')['central_rate'].mean().reset_index(name='Yearly Avg (365 Days)')
