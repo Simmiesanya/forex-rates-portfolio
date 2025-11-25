@@ -69,11 +69,14 @@ max_date_df['date'] = pd.to_datetime(max_date_df['date']).dt.strftime('%Y-%m-%d'
 max_date_df = max_date_df.dropna(subset=['rate'])
 
 def alternate_rows(row):
-    color = '#f0f2f6' if row.name % 2 == 0 else 'white'
-    return [f'background-color: {color}'] * len(row)
+    if row.name % 2 == 0:
+        bg_color = '#333333'  # light gray/black
+    else:
+        bg_color = '#1a1a1a'  # deep grey
+    return [f'background-color: {bg_color}; color: #ffffff'] * len(row)
 
 styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'rate': '{:.2f}'})
-st.dataframe(styled_df)
+st.dataframe(styled_df, use_container_width=True)
 
 # All the rest of your awesome charts (unchanged)
 if df_trends.empty:
@@ -138,7 +141,7 @@ else:
     df_30 = df[df['date'] >= latest_date - pd.Timedelta(days=30)].groupby('currency')['central_rate'].mean().reset_index(name='Monthly Avg (30 Days)')
     df_365 = df[df['date'] >= latest_date - pd.Timedelta(days=365)].groupby('currency')['central_rate'].mean().reset_index(name='Yearly Avg (365 Days)')
     averages = df_30.merge(df_365, on='currency')
-    st.dataframe(averages.style.format({'Monthly Avg (30 Days)': '{:.2f}', 'Yearly Avg (365 Days)': '{:.2f}'}))
+    st.dataframe(averages.style.format({'Monthly Avg (30 Days)': '{:.2f}', 'Yearly Avg (365 Days)': '{:.2f}'}), use_container_width=True)
 
 # =============================================================================
 # NEW SECTION 1: Independent Historical Table with Filters
