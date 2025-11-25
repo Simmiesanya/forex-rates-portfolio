@@ -4,3 +4,4 @@ sqlalchemy
 plotly
 numpy
 psycopg2-binary
+matplotlib
