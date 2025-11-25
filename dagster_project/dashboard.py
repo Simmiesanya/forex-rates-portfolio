@@ -14,12 +14,16 @@ st.markdown(
     """
     <div style="background-color: #0E1117; padding: 12px; border-radius: 8px; border-left: 5px solid #1f77b4; margin: 20px 0;">
     <p style="margin:0; color:#8A9BA8; font-size:15px;">
-    ℹ️ <strong>Data is refreshed by noon daily (Lagos time)</strong>
+    ℹ️ <strong>Data is automatically refreshed daily by noon.</strong>
     </p>
     </div>
     """,
     unsafe_allow_html=True
 )
+
+# Manual refresh
+if st.button("Refresh Data"):
+    st.rerun()
 
 # DB connection
 conn_str = st.secrets["POSTGRES_CONN_STR"]
@@ -80,8 +84,13 @@ else:
 
     # 3. Daily % Change Bar Chart
     st.subheader("Daily Percentage Changes")
-    df_changes = df_trends.copy()
-    df_changes['pct_change'] = df_changes.groupby('currency')['central_rate'].pct_change() * 100
+    selected_currency_change = st.selectbox("Select Currency for % Changes", currencies, index=currencies.index('USD') if 'USD' in currencies else 0)
+    time_window_change = st.slider("Time Window for % Changes (Days)", 7, 365, 30)
+    df_changes = df[
+        (df['date'] >= latest_date - pd.Timedelta(days=time_window_change)) &
+        (df['currency'] == selected_currency_change)
+    ].sort_values('date')
+    df_changes['pct_change'] = df_changes['central_rate'].pct_change() * 100
     df_changes['color'] = np.where(df_changes['pct_change'] > 0, 'Positive (Green)', 'Negative (Red)')
     fig_change = px.bar(df_changes, x='date', y='pct_change', color='color',
                         color_discrete_map={'Positive (Green)': 'green', 'Negative (Red)': 'red'},
@@ -153,13 +162,11 @@ df_hist = df_hist[df_hist['date'].dt.date == selected_date_hist]
 if df_hist.empty:
     st.info("No data available for the selected date and currency.")
 else:
-    df_hist_display = df_hist[['date', 'currency', 'buying_rate', 'central_rate', 'selling_rate']].copy()
+    df_hist_display = df_hist[['date', 'currency', 'central_rate']].copy()
     df_hist_display['date'] = df_hist_display['date'].dt.strftime('%Y-%m-%d')
     df_hist_display = df_hist_display.sort_values('currency')
     st.dataframe(df_hist_display.style.format({
-        'buying_rate': '{:.2f}',
-        'central_rate': '{:.2f}',
-        'selling_rate': '{:.2f}'
+        'central_rate': '{:.2f}'
     }), use_container_width=True)
 
 # =============================================================================
@@ -188,10 +195,6 @@ with col_low:
 with col_high:
     st.write("**All-Time Highest Central Rates**")
     st.dataframe(highs.style.format({'All-Time High Rate': '{:.2f}'}), use_container_width=True)
-
-# Manual refresh
-if st.button("Refresh Data"):
-    st.rerun()
 
 # Footer
 st.markdown("""
