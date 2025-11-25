@@ -12,7 +12,7 @@ st.markdown(
     """
     <div style="background-color: #0E1117; padding: 12px; border-radius: 8px; border-left: 5px solid #1f77b4; margin: 20px 0;">
     <p style="margin:0; color:#8A9BA8; font-size:15px;">
-    ℹ️ <strong>Data is automatically refreshed daily by noon.</strong>
+    ℹ️ <strong>Data is automatically refreshed daily by 12pm.</strong>
     </p>
     </div>
     """,
@@ -48,7 +48,6 @@ df_trends = df[
     (df['currency'].isin(selected_currencies))
 ].sort_values(['currency', 'date'])
 # 1. Latest Date Table
-st.subheader("Rates for Latest Available Date")
 with engine.connect() as conn:
     max_date_df = pd.read_sql(text("""
         SELECT date, currency, central_rate AS rate
@@ -57,6 +56,9 @@ with engine.connect() as conn:
     """), conn)
 max_date_df['date'] = pd.to_datetime(max_date_df['date']).dt.strftime('%Y-%m-%d')
 max_date_df = max_date_df.dropna(subset=['rate'])
+latest_date_str = max_date_df['date'].iloc[0]
+st.subheader(f"Rates for Latest Available Date: {latest_date_str}")
+max_date_df = max_date_df.drop(columns=['date'])
 def alternate_rows(row):
     if row.name % 2 == 0:
         bg_color = '#333333' # light gray/black
