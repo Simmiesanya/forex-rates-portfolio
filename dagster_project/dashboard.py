@@ -136,7 +136,7 @@ else:
 # NEW SECTION 1: Independent Historical Table with Filters
 # =============================================================================
 st.markdown("---")
-st.subheader("Historical Rates Explorer (Independent Table)")
+st.subheader("Historical Rates Explorer")
 
 col1, col2 = st.columns([1, 3])
 with col1:
