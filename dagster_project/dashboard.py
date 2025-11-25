@@ -56,6 +56,8 @@ with engine.connect() as conn:
     """), conn)
 max_date_df['date'] = pd.to_datetime(max_date_df['date']).dt.strftime('%Y-%m-%d')
 max_date_df = max_date_df.dropna(subset=['rate'])
+max_date_df = max_date_df[max_date_df['currency'].isin(['CAD', 'CHF', 'CNY', 'DKK', 'EUR', 'GBP', 'JPY', 'USD', 'ZAR'])]
+max_date_df['currency'] = '1 ' + max_date_df['currency']
 latest_date_str = max_date_df['date'].iloc[0]
 st.subheader(f"Rates for Latest Available Date: {latest_date_str}")
 max_date_df = max_date_df.drop(columns=['date'])
@@ -65,8 +67,8 @@ def alternate_rows(row):
     else:
         bg_color = '#1a1a1a' # deep grey
     return [f'background-color: {bg_color}; color: #ffffff'] * len(row)
-styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'rate': '{:.2f}'})
-st.dataframe(styled_df, use_container_width=True)
+styled_df = max_date_df.style.apply(alternate_rows, axis=1).format({'rate': '{:.2f}'}).set_properties(subset=['rate'], **{'text-align': 'left'})
+st.dataframe(styled_df, use_container_width=False)
 # All the rest of your awesome charts (unchanged)
 if df_trends.empty:
     st.warning("No data available for the selected currencies and time window.")
