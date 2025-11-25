@@ -1,0 +1,12 @@
+[server]
+enableStaticServing = true
+enableCORS = false
+
+[theme]
+primaryColor = "#1E40AF"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f1f5f9"
+textColor = "#0f172a"
+
+[browser]
+gatherUsageStats = false
