@@ -30,7 +30,7 @@ def load_data():
     with engine.connect() as conn:
         df = pd.read_sql(text("""
             SELECT date, currency, buying_rate, central_rate, selling_rate
-            FROM fx_vault.fx_rates_daily
+            FROM vault.fx_rates_daily
             ORDER BY date DESC, currency
         """), conn)
     df['date'] = pd.to_datetime(df['date'])
@@ -51,8 +51,8 @@ df_trends = df[
 with engine.connect() as conn:
     max_date_df = pd.read_sql(text("""
         SELECT date, currency, central_rate AS rate
-        FROM fx_vault.fx_rates_daily
-        WHERE date = (SELECT MAX(date) FROM fx_vault.fx_rates_daily)
+        FROM vault.fx_rates_daily
+        WHERE date = (SELECT MAX(date) FROM vault.fx_rates_daily)
     """), conn)
 max_date_df['date'] = pd.to_datetime(max_date_df['date']).dt.strftime('%Y-%m-%d')
 max_date_df = max_date_df.dropna(subset=['rate'])
